@@ -12,8 +12,8 @@
 #
 [versions]
 # Build tools
-agp = "8.13.2"
-kotlin = "2.1.21"
+agp = "9.3.2"
+kotlin = "2.2.10"
 
 # Android SDK levels (mirrored in app/build.gradle.kts)
 compileSdk = "35"
