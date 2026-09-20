@@ -41,12 +41,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.cpen321application.ui.theme.CPEN321ApplicationTheme
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +67,8 @@ private fun M1App(
     modifier: Modifier = Modifier
 ) {
     var currentPage by rememberSaveable { mutableStateOf("Home") }
+    // Keep login in memory while navigating between the three features.
+    val loginState = remember { LoginServerState() }
 
     // Put the state in the entire app to share the state together。
     var minutesInput by rememberSaveable { mutableStateOf("0") }
@@ -166,12 +163,15 @@ private fun M1App(
 
                 when (currentPage) {
                     "Login + Server" -> {
-                        Text("Sign-in is not configured yet.")
-                        BackendStatus(apiBaseUrl)
+                        LoginServerScreen(
+                            apiBaseUrl = apiBaseUrl,
+                            googleClientId = BuildConfig.GOOGLE_CLIENT_ID,
+                            state = loginState
+                        )
                     }
 
                     "Live Updates" -> {
-                        Text("Live pixel art is not connected yet.")
+                        LiveUpdatesScreen(apiBaseUrl)
                     }
 
                     "Timer" -> {
@@ -316,45 +316,3 @@ private fun formatDuration(totalSeconds: Long): String {
     return "$minutes:$seconds"
 }
 
-@Composable
-private fun BackendStatus(apiBaseUrl: String) {
-    var statusText by remember(apiBaseUrl) {
-        mutableStateOf("Checking backend...")
-    }
-
-    LaunchedEffect(apiBaseUrl) {
-        statusText = fetchHealthStatus(apiBaseUrl)
-    }
-
-    Text(statusText)
-}
-
-private suspend fun fetchHealthStatus(
-    apiBaseUrl: String
-): String = withContext(Dispatchers.IO) {
-    val healthUrl = "${apiBaseUrl.trimEnd('/')}/health"
-    var connection: HttpURLConnection? = null
-
-    try {
-        val request = URL(healthUrl).openConnection() as HttpURLConnection
-        connection = request
-        request.requestMethod = "GET"
-        request.connectTimeout = 5_000
-        request.readTimeout = 5_000
-
-        val code = request.responseCode
-
-        if (code == HttpURLConnection.HTTP_OK) {
-            val body = request.inputStream.bufferedReader().use {
-                it.readText()
-            }
-            "Backend healthy ($healthUrl): $body"
-        } else {
-            "Backend error ($healthUrl): HTTP $code"
-        }
-    } catch (error: IOException) {
-        "Backend unreachable ($healthUrl): ${error.message}"
-    } finally {
-        connection?.disconnect()
-    }
-}

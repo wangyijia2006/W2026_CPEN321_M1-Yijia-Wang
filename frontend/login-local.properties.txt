@@ -1,0 +1,3 @@
+# Merge these two lines into frontend/local.properties; preserve sdk.dir.
+API_BASE_URL=https://136.66.38.82
+GOOGLE_CLIENT_ID=791587051647-lislsjkoqe0ub0nlv3v4bpibaqrcr4bv.apps.googleusercontent.com
